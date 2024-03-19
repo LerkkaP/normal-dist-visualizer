@@ -1,12 +1,13 @@
 :root {
-    --black: #111111;
-    --white: #f5f5f5;
+    --color-main: #111111;
+    --color-white: #f5f5f5;
 }
 
 *,
 *::before,
 *::after {
     box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
 }
 
 img {
@@ -15,5 +16,24 @@ img {
 }
 
 body {
-    background-color: var(--white);
+    background-color: var(--color-white);
+}
+
+header {
+    text-align: center;
+}
+
+.wrapper {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
 }

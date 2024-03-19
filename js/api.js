@@ -30,7 +30,7 @@ const areaBelow = async (value, mean, sd) => {
 
   try {
     const result = await makeRequest(url, data);
-    console.log("Area above probability:", result);
+    console.log("Area below probability:", result);
   } catch (error) {
     console.error('Error calculating area above:', error);
   }
