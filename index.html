@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 </head>
 <body>
   <div class="wrapper">
@@ -19,37 +19,116 @@
     <main id="container"></main>
     <footer>Copyright &copy; 2024 Erik Peteri</footer>
   </div>
-  <script type="module">
+  <script>
+    //setting up empty data array
+    var data = [];
 
-    import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-    
-    // Declare the chart dimensions and margins.
-    const width = 640;
-    const height = 400;
-    const marginTop = 20;
-    const marginRight = 20;
-    const marginBottom = 30;
-    const marginLeft = 40;
-    
-    // Declare the x (horizontal position) scale.
-    const x = d3.scaleUtc()
-        .domain([new Date("2023-01-01"), new Date("2024-01-01")])
-        .range([marginLeft, width - marginRight]);
-    
-    // Create the SVG container.
-    const svg = d3.create("svg")
-        .attr("width", width)
-        .attr("height", height);
-    
-    // Add the x-axis.
+    getData(); // popuate data 
+
+    var margin = {
+        top: 20,
+        right: 20,
+        bottom: 30,
+        left: 50
+    },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+    .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+
+    var line = d3.svg.line()
+        .x(function(d) {
+            return x(d.q);
+        })
+        .y(function(d) {
+            return y(d.p);
+        });
+
+    var svg = d3.select("#container").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    x.domain(d3.extent(data, function(d) {
+        return d.q;
+    }));
+    y.domain(d3.extent(data, function(d) {
+        return d.p;
+    }));
+
     svg.append("g")
-        .attr("transform", `translate(0,${height - marginBottom})`)
-        .call(d3.axisBottom(x));
-    
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
 
-    // Append the SVG element.
-    container.append(svg.node());
-    
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    svg.append("path")
+        .datum(data)
+        .attr("class", "line")
+        .attr("d", line);
+
+    function getData() {
+
+    // loop to populate data array with 
+    // probabily - quantile pairs
+    for (var i = 0; i < 100000; i++) {
+        var q = normal() // calc random draw from normal dist
+        var p = gaussian(q) // calc prob of rand draw
+        var el = {
+            "q": q,
+            "p": p
+        }
+        data.push(el)
+    };
+
+    // need to sort for plotting
+    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+    data.sort(function(x, y) {
+        return x.q - y.q;
+    });	
+    }
+
+    // from http://bl.ocks.org/mbostock/4349187
+    // Sample from a normal distribution with mean 0, stddev 1.
+    function normal() {
+        var x = 0,
+            y = 0,
+            rds, c;
+        do {
+            x = Math.random() * 2 - 1;
+            y = Math.random() * 2 - 1;
+            rds = x * x + y * y;
+        } while (rds == 0 || rds > 1);
+        c = Math.sqrt(-2 * Math.log(rds) / rds); // Box-Muller transform
+        return x * c; // throw away extra sample y * c
+    }
+
+    //taken from Jason Davies science library
+    // https://github.com/jasondavies/science.js/
+    function gaussian(x) {
+        var gaussianConstant = 1 / Math.sqrt(2 * Math.PI),
+            mean = 0,
+            sigma = 1;
+
+        x = (x - mean) / sigma;
+        return gaussianConstant * Math.exp(-.5 * x * x) / sigma;
+    };
   </script>
   <script src="js/api.js"></script>
 </body>
