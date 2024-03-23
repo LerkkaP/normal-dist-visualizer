@@ -19,12 +19,10 @@
     <main id="container"></main>
     <footer>Copyright &copy; 2024 Erik Peteri</footer>
   </div>
-  <script>
-    //setting up empty data array
-    var data = [];
-
-    getData(); // popuate data 
-
+  <script type="module">
+    import { generateData } from './js/chart/data.js';
+    var data = generateData(100000); 
+    
     var margin = {
         top: 20,
         right: 20,
@@ -62,6 +60,19 @@
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    var mean = 0; // Example mean value
+    var sigma = 1; // Example standard deviation value
+
+    // Calculate the minimum and maximum values for the x-axis domain
+    var xMin = mean - 3 * sigma;
+    var xMax = mean + 3 * sigma;
+
+    // Set the domain of the x-axis scale
+    x.domain([xMin, xMax]);
+
+    // Adjust the tick values on the x-axis
+    xAxis.tickValues(d3.range(xMin, xMax + 1, sigma)); // Add +
+
     x.domain(d3.extent(data, function(d) {
         return d.q;
     }));
@@ -82,53 +93,6 @@
         .datum(data)
         .attr("class", "line")
         .attr("d", line);
-
-    function getData() {
-
-    // loop to populate data array with 
-    // probabily - quantile pairs
-    for (var i = 0; i < 100000; i++) {
-        var q = normal() // calc random draw from normal dist
-        var p = gaussian(q) // calc prob of rand draw
-        var el = {
-            "q": q,
-            "p": p
-        }
-        data.push(el)
-    };
-
-    // need to sort for plotting
-    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-    data.sort(function(x, y) {
-        return x.q - y.q;
-    });	
-    }
-
-    // from http://bl.ocks.org/mbostock/4349187
-    // Sample from a normal distribution with mean 0, stddev 1.
-    function normal() {
-        var x = 0,
-            y = 0,
-            rds, c;
-        do {
-            x = Math.random() * 2 - 1;
-            y = Math.random() * 2 - 1;
-            rds = x * x + y * y;
-        } while (rds == 0 || rds > 1);
-        c = Math.sqrt(-2 * Math.log(rds) / rds); // Box-Muller transform
-        return x * c; // throw away extra sample y * c
-    }
-
-    //taken from Jason Davies science library
-    // https://github.com/jasondavies/science.js/
-    function gaussian(x) {
-        var gaussianConstant = 1 / Math.sqrt(2 * Math.PI),
-            mean = 0,
-            sigma = 1;
-
-        x = (x - mean) / sigma;
-        return gaussianConstant * Math.exp(-.5 * x * x) / sigma;
-    };
   </script>
   <script src="js/api.js"></script>
 </body>
