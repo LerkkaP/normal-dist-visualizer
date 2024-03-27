@@ -55,6 +55,26 @@ const areaBetween = async (value_lower, value_upper, mean, sd) => {
   }
 }
 
+/**
+ * Function to make API requests to generate data for plotting
+ * @param {number} sampleSize - Lower value for the area calculation
+ */
+export const generateData = async (sampleSize) => { 
+  const url = `${baseUrl}/generate_data`;
+  const data = {sampleSize}
+
+  try {
+    const result = await makeRequest(url, data);
+    const parsedResult = JSON.parse(result).map(entry => ({
+      q: entry.q[0], 
+      p: entry.p[0]
+    }));
+    return parsedResult
+  } catch (error) {
+    console.error('Error in generating data:', error);
+  }
+}
+
 const makeRequest = async (url, data) => {
   const response = await fetch(url, {
     method: "POST",
